@@ -1,5 +1,6 @@
 package com.microservicios.currencyChange;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,23 +11,17 @@ import java.util.HashMap;
 
 @RestController
 public class CurrencyChangeController {
-
+    @Autowired
+    private CurrencyExchangeProxy ExchangeProxy;
     @GetMapping("/change/{amount}/{from}/{to}")
     public CurrencyChange changeCurrency(
             @PathVariable int amount,
             @PathVariable String from,
-            @PathVariable String to
-    ){
-        HashMap<String, String> reqVariables = new HashMap<>();
-        reqVariables.put("from", from);
-        reqVariables.put("to", to);
-        ResponseEntity<Integer> exchangeRate = new RestTemplate().getForEntity(
-                                            "http://localhost:8000/exchange/{from}/{to}", Integer.class, reqVariables);
-        if(exchangeRate.getBody() == null){
-            throw new RuntimeException("Unrecorded exchange rate or invalid currencies");
-        }
+            @PathVariable String to)
+    {
+        int exchangeRate = ExchangeProxy.getExchange(from, to);
 
-        CurrencyChange res = new CurrencyChange(amount, exchangeRate.getBody());
+        CurrencyChange res = new CurrencyChange(amount, exchangeRate);
 
         return res;
     }
