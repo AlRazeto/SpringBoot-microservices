@@ -10,12 +10,14 @@
         <module name="currency-exchange-service" />
         <module name="currencyChange" />
         <module name="limits-service" />
+        <module name="Gateway" />
         <module name="naming-server" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="currency-exchange-service" target="17" />
       <module name="currencyChange" target="17" />
+      <module name="Gateway" target="17" />
       <module name="limits-service" target="17" />
       <module name="naming-server" target="17" />
       <module name="springCloudConfigServer" target="17" />
@@ -23,6 +25,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Gateway" options="-parameters" />
       <module name="currency-exchange-service" options="-parameters" />
       <module name="currencyChange" options="-parameters" />
       <module name="limits-service" options="-parameters" />
