@@ -19,3 +19,64 @@ services:
     container_name: zipkin
     ports:
       - "9411:9411"
+
+  sc-config-server:
+    build:
+      context: ./springCloudConfigServer
+      dockerfile: dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - "../../config-git:/config-git"
+    environment:
+      SPRING.CLOUD.CONFIG.SERVER.GIT.URI: file://config-git
+
+  naming-server:
+    build:
+      context: ./naming-server
+      dockerfile: dockerfile
+    ports:
+      - "8761:8761"
+    depends_on:
+      - sc-config-server
+    environment:
+      SPRING.CONFIG.IMPORT: optional:configserver:http://sc-config-server:8888
+
+  gateway:
+    build:
+      context: ./Gateway
+      dockerfile: dockerfile
+    ports:
+      - "8765:8765"
+    depends_on:
+      - naming-server
+    environment:
+      SPRING.ZIPKIN.BASEURL: http://zipkin:9411/
+
+  currency-exchange:
+    build:
+      context: ./currency-exchange-service
+      dockerfile: dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - gateway
+      - db
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin:9411/
+      SPRING.DATASOURCE.URL: jdbc:mysql://db:3306/db
+      SPRING.DATASOURCE.USER: me
+      SPRING.DATASOURCE.PASSWORD: user
+
+  currency-change:
+    build:
+      context: ./currencyChange
+      dockerfile: dockerfile
+    ports:
+      - "8100:8100"
+    depends_on:
+      - currency-exchange
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin:9411/
